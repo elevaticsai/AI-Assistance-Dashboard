@@ -1,8 +1,7 @@
-import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Home, Database, Brain, Users, Settings, BarChart, X,
-  Bot
+  
 } from 'lucide-react';
 
 const navigation = [
@@ -12,6 +11,7 @@ const navigation = [
   { name: 'User Management', href: '/users', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'Analytics', href: '/analytics', icon: BarChart },
+  { name: 'Chats', href: '/chats', icon: Users  },
 ];
 
 export default function Sidebar({ open, setOpen }: { 
@@ -32,7 +32,7 @@ export default function Sidebar({ open, setOpen }: {
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex h-16 items-center justify-between px-4">
+        {/* <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-2">
             <Bot className="h-8 w-8 text-indigo-600" />
             <span className="text-xl font-bold text-gray-900">AI Admin</span>
@@ -44,7 +44,21 @@ export default function Sidebar({ open, setOpen }: {
           >
             <X className="h-6 w-6" />
           </button>
-        </div>
+        </div> */}
+        <div className="flex h-16 items-center justify-between px-4">
+  <div className="flex items-center space-x-2">
+    <img src="digiyatra-footernew.png" alt="AI Admin" className="h-7 " />
+    {/* <span className="text-xl font-bold text-gray-900">Admin AI</span> */}
+  </div>
+  <button
+    type="button"
+    className="lg:hidden"
+    onClick={() => setOpen(false)}
+  >
+    <X className="h-6 w-6" />
+  </button>
+</div>
+
 
         <nav className="mt-4 space-y-1 px-2">
           {navigation.map((item) => (
