@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, Search, Trash2 } from 'lucide-react';
+import axios from 'axios';
 
 export default function KnowledgeBase() {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [userId, setUserId] = useState<string | null>('digiyatra');
+  const [userIdInput, setUserIdInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [tableName, setTableName] = useState('');
+  const [tables, setTables] = useState<any[]>([]);
+
+  const baseUrl = 'https://pvanand-rag-chat-with-analytics.hf.space';
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
-    } else if (e.type === "dragleave") {
+    } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
   };
@@ -35,76 +45,205 @@ export default function KnowledgeBase() {
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleSetUserId = () => {
+    if (userIdInput.trim()) {
+      setUserId(userIdInput.trim());
+    }
+  };
+
+  const handleSearchDocuments = async () => {
+    if (!searchQuery || !userId) {
+      alert("Please enter a valid search query and user ID.");
+      return;
+    }
+  
+    console.log("Search Query:", searchQuery);
+    console.log("User ID:", userId);
+  
+    try {
+      const response = await axios.post(
+        `${baseUrl}/rag/query_table`,
+        {
+          query: searchQuery,  // Assuming the backend expects this field
+          user_id: userId      // Send the user_id in the request body if needed
+        }
+      );
+      console.log("Search Results:", response.data);
+      setSearchResults(response.data.results);
+    } catch (error) {
+      console.error("Error searching documents:", error);
+      alert(`Error searching documents: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const fetchTables = async () => {
+    if (userId) {
+      try {
+        const response = await axios.get(`${baseUrl}/rag/get_tables/${userId}`);
+        setTables(response.data || []);
+      } catch (error) {
+        console.error("Error fetching tables:", error);
+      }
+    }
+  };
+
+  const handleUploadDocuments = async () => {
+    if (!files.length || !userId || !tableName) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+
+    try {
+      const url = new URL(`${baseUrl}/rag/create_table`);
+      url.searchParams.append('user_id', userId);
+      url.searchParams.append('table_name', tableName);  // Pass table_name here
+      await axios.post(url.toString(), formData);
+      alert('Documents uploaded successfully!');
+      await fetchTables();
+      setFiles([]);
+    } catch (error) {
+      alert('Error uploading documents: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchTables();  // Fetch the list of tables when userId changes
+    }
+  }, [userId]);
+
   return (
-    <div className="space-y-6">
-      <div className="sm:flex sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Upload documents to train your AI assistant
-          </p>
+    <div className="container mx-auto p-6">
+      {/* Main Content */}
+      <>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Knowledge Base</h1>
+            <p className="text-gray-700">Upload documents to train your AI assistant</p>
+          </div>
+          {/* <div>
+            <button
+              onClick={() => setUserId(null)}
+              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md"
+            >
+              Change User ID
+            </button>
+          </div> */}
         </div>
-        <div className="mt-4 sm:mt-0">
-          <div className="relative">
+        
+        <h3 className="text-xl font-semibold text-gray-800">Existing Tables:</h3>
+        <br></br>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          
+  {tables.length > 0 ? (
+    tables.map((table, index) => (
+      <div
+        key={index}
+        className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition"
+      >
+        <h3 className="text-xl font-semibold mb-3">{table.table_name}</h3>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => selectTableForQuery(table)}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+          >
+            Query Documents
+          </button>
+        </div>
+      </div>
+    ))
+  ) : (
+    <div className="col-span-full text-gray-500">
+      No tables found.
+    </div>
+  )}
+</div>
+
+
+          <br></br>
+        {/* Table Selection */}
+        <div className="mb-6">
+          
+        <h3 className="text-xl font-semibold text-gray-800">Create Table:</h3>
+          {/* <label className="text-sm font-semibold text-gray-700" htmlFor="table-name">Create Table</label> */}
+          <input
+            id="table-name"
+            type="text"
+            placeholder="Enter Table Name"
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md mt-2"
+          />
+        
+        </div>
+
+        {/* Search Section */}
+        {/* <div className="mb-6">
+          <div className="relative flex items-center">
             <input
               type="text"
               placeholder="Search documents..."
-              className="block w-full rounded-md border-gray-300 pr-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyUp={(e) => e.key === 'Enter' && handleSearchDocuments()}
+              className="w-full p-3 border border-gray-300 rounded-md"
             />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <Search className="h-4 w-4 text-gray-400" />
+            <div className="absolute right-4 text-gray-400">
+              <Search className="h-5 w-5" />
             </div>
           </div>
-        </div>
-      </div>
+          <button
+            onClick={handleSearchDocuments}
+            className="mt-4 bg-indigo-600 text-white p-3 rounded-md"
+          >
+            Search Documents
+          </button>
+        </div> */}
 
-      <div
-        className={`border-2 border-dashed rounded-lg p-10 text-center ${
-          dragActive ? "border-indigo-500 bg-indigo-50" : "border-gray-300"
-        }`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <div className="flex flex-col items-center">
-          <Upload className="h-12 w-12 text-gray-400" />
-          <div className="mt-4">
+        {/* Upload Section */}
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 text-center mb-6 ${
+            dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'
+          }`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <div className="flex flex-col items-center">
+            <Upload className="h-16 w-16 text-gray-400 mb-4" />
+            <p className="text-xl font-semibold text-gray-800 mb-4">
+              Drag & Drop or Browse to Upload Files
+            </p>
             <label
               htmlFor="file-upload"
-              className="relative cursor-pointer rounded-md font-medium text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:text-indigo-500"
+              className="cursor-pointer bg-indigo-600 text-white py-3 px-6 rounded-md mb-4"
             >
-              <span>Upload files</span>
+              Upload Files
               <input
                 id="file-upload"
-                name="file-upload"
                 type="file"
                 className="sr-only"
                 multiple
                 onChange={handleFileInput}
               />
             </label>
-            <p className="pl-1 text-gray-500">or drag and drop</p>
+            <p className="text-sm text-gray-500">PDF, DOC, DOCX, TXT up to 10MB each</p>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
-            PDF, DOC, DOCX, TXT up to 10MB each
-          </p>
         </div>
-      </div>
 
-      {files.length > 0 && (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <ul className="divide-y divide-gray-200">
-            {files.map((file, index) => (
-              <li key={index} className="px-6 py-4">
-                <div className="flex items-center justify-between">
+        {/* Files List */}
+        {files.length > 0 && (
+          <div className="bg-white shadow rounded-lg overflow-hidden mb-6">
+            <ul className="divide-y divide-gray-200">
+              {files.map((file, index) => (
+                <li key={index} className="px-6 py-4 flex justify-between items-center">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {file.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+                    <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                    <p className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                   </div>
                   <button
                     onClick={() => removeFile(index)}
@@ -112,12 +251,21 @@ export default function KnowledgeBase() {
                   >
                     <Trash2 className="h-5 w-5" />
                   </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Upload Button */}
+        <button
+          onClick={handleUploadDocuments}
+          disabled={isUploading}
+          className="w-half bg-indigo-600 text-white py-3 rounded-md w-1/4"
+        >
+          {isUploading ? 'Uploading...' : 'Upload Documents'}
+        </button>
+      </>
     </div>
   );
 }

@@ -5,12 +5,13 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
-import Dashboard from './pages/Dashboard';
-import KnowledgeBase from './pages/KnowledgeBase';
 import Models from './pages/Models';
 import UserManagement from './pages/UserManagement';
 import Settings from './pages/Settings';
 import Analytics from './pages/Analytics';
+import Dashboard from './pages/Dashboard';
+import KnowledgeBase from './pages/KnowledgeBase';
+import Chat from './pages/Chat';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -38,6 +39,7 @@ function App() {
           <Route path="users" element={<UserManagement />} />
           <Route path="settings" element={<Settings />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="chats" element={<Chat />} />
         </Route>
       </Routes>
     </BrowserRouter>
