@@ -78,52 +78,89 @@ const Chat: React.FC = () => {
 
 //     setUserInput("");
 //   };
-
 const sendMessage = async (): Promise<void> => {
-    if (!userInput.trim()) return;
-  
-    const userMessage: Message = { type: "user", content: marked.parse(userInput) };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-  
-    const botPlaceholder: Message = { type: "bot", content: "" };
-    const newMessageIndex = messages.length;
-    setMessages((prevMessages) => [...prevMessages, botPlaceholder]);
-  
-    try {
-      const response = await axios.post(
-        "https://pvanand-rag-chat-with-analytics.hf.space/digiyatra-followup",
-        {
-          query: userInput,
-          model_id: selectedModel,
-          conversation_id: conversationId,
-          user_id: "digiyatra",
-        }
-      );
-  
-      // Log the response to inspect the structure
-      console.log('Response data:', response.data);
-  
-      // Access the full response from the nested metadata structure
-      const fullResponse = response.data.metadata?.response_full?.response;
-  
-      // Check if the response exists and is a string
-      if (typeof fullResponse === 'string') {
-        const parsedResponse = marked.parse(fullResponse);
-        setMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages];
-          updatedMessages[newMessageIndex].content = parsedResponse;
-          return updatedMessages;
-        });
-      } else {
-        console.error("Unexpected response structure: response is not a string.");
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
+  if (!userInput.trim()) return;
+
+  const userMessage: Message = { type: "user", content: marked.parse(userInput) };
+  setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+  const botPlaceholder: Message = { type: "bot", content: "..." };
+  setMessages((prevMessages) => [...prevMessages, botPlaceholder]);
+
+  try {
+    const response = await fetch("https://pvanand-rag-chat-with-analytics.hf.space/digiyatra-followup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query: userInput,
+        model_id: selectedModel,
+        conversation_id: conversationId,
+        user_id: "digiyatra",
+      }),
+    });
+
+    if (!response.body) {
+      throw new Error("Response body is null.");
     }
-  
-    setUserInput("");
-  };
-  
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let botResponse = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+
+      // Remove "data: " prefix and parse JSON
+      const cleanedChunk = chunk
+        .split("\n")
+        .filter((line) => line.trim().startsWith("data:"))
+        .map((line) => line.replace(/^data: /, "").trim())
+        .map((jsonLine) => {
+          try {
+            return JSON.parse(jsonLine);
+          } catch (error) {
+            console.error("Failed to parse JSON line:", jsonLine, error);
+            return null;
+          }
+        })
+        .filter((parsed) => parsed !== null);
+
+      cleanedChunk.forEach((data) => {
+        if (data.type === "token" && data.content) {
+          botResponse += data.content;
+          setMessages((prevMessages) => {
+            const updatedMessages = [...prevMessages];
+            updatedMessages[updatedMessages.length - 1].content = marked.parse(botResponse);
+            return updatedMessages;
+          });
+        }
+      });
+    }
+
+    // Final state update to ensure complete response is displayed
+    setMessages((prevMessages) => {
+      const updatedMessages = [...prevMessages];
+      updatedMessages[updatedMessages.length - 1].content = marked.parse(botResponse);
+      return updatedMessages;
+    });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    setMessages((prevMessages) => {
+      const updatedMessages = [...prevMessages];
+      updatedMessages[updatedMessages.length - 1].content =
+        "Sorry, I couldn't process your request. Please try again.";
+      return updatedMessages;
+    });
+  }
+
+  setUserInput("");
+};
+
   const startRecording = (): void => {
     alert("Speech recognition functionality is not yet implemented.");
   };
