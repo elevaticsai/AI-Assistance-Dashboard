@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   LineChart,
   Line,
@@ -15,34 +15,42 @@ import {
 } from 'recharts';
 import { ArrowUp, ArrowDown, Users, MessageSquare, Zap } from 'lucide-react';
 
-const usageData = [
-  { date: '2024-01-01', requests: 150 },
-  { date: '2024-01-02', requests: 230 },
-  { date: '2024-01-03', requests: 224 },
-  { date: '2024-01-04', requests: 218 },
-  { date: '2024-01-05', requests: 335 },
-  { date: '2024-01-06', requests: 247 },
-  { date: '2024-01-07', requests: 412 },
-];
-
-const responseTimeData = [
-  { time: '00:00', value: 0.8 },
-  { time: '04:00', value: 0.6 },
-  { time: '08:00', value: 1.2 },
-  { time: '12:00', value: 0.9 },
-  { time: '16:00', value: 1.1 },
-  { time: '20:00', value: 0.7 },
-];
-
-const modelUsageData = [
-  { name: 'GPT-4', value: 60 },
-  { name: 'GPT-3.5', value: 30 },
-  { name: 'Claude', value: 10 },
-];
-
 const COLORS = ['#6366f1', '#34d399', '#fbbf24'];
 
 export default function Analytics() {
+  const [statistics, setStatistics] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAnalyticsData() {
+      try {
+        const response = await fetch(
+          'https://pvanand-rag-chat-with-analytics.hf.space/observability/export-statistics?format=json&days=30&time_series_interval=day'
+        );
+        const data = await response.json();
+        setStatistics(data.statistics);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching analytics data:', error);
+        setLoading(false);
+      }
+    }
+
+    fetchAnalyticsData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  const {
+    general_stats,
+    time_series,
+    top_users,
+    trends,
+    token_metrics,
+  } = statistics;
+
   return (
     <div className="space-y-6">
       <div>
@@ -66,12 +74,7 @@ export default function Analytics() {
                   </dt>
                   <dd className="flex items-baseline">
                     <div className="text-2xl font-semibold text-gray-900">
-                      1,482
-                    </div>
-                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                      <ArrowUp className="h-4 w-4 flex-shrink-0" />
-                      <span className="sr-only">Increased by</span>
-                      12.5%
+                      {general_stats.unique_conversations}
                     </div>
                   </dd>
                 </dl>
@@ -89,14 +92,11 @@ export default function Analytics() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Active Users
+                    Unique Users
                   </dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">245</div>
-                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                      <ArrowUp className="h-4 w-4 flex-shrink-0" />
-                      <span className="sr-only">Increased by</span>
-                      8.2%
+                    <div className="text-2xl font-semibold text-gray-900">
+                      {general_stats.unique_users}
                     </div>
                   </dd>
                 </dl>
@@ -114,16 +114,11 @@ export default function Analytics() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Avg. Response Time
+                    Avg. Latency (s)
                   </dt>
                   <dd className="flex items-baseline">
                     <div className="text-2xl font-semibold text-gray-900">
-                      0.8s
-                    </div>
-                    <div className="ml-2 flex items-baseline text-sm font-semibold text-red-600">
-                      <ArrowDown className="h-4 w-4 flex-shrink-0" />
-                      <span className="sr-only">Decreased by</span>
-                      5.4%
+                      {general_stats.avg_latency.toFixed(2)}s
                     </div>
                   </dd>
                 </dl>
@@ -140,17 +135,17 @@ export default function Analytics() {
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={usageData}>
+              <BarChart data={time_series}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
-                  dataKey="date"
+                  dataKey="timestamp"
                   tick={{ fontSize: 12 }}
                   angle={-45}
                   textAnchor="end"
                 />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="requests" fill="#6366f1" />
+                <Bar dataKey="request_count" fill="#6366f1" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -158,35 +153,16 @@ export default function Analytics() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Response Time (24h)
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={responseTimeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#6366f1"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Model Usage Distribution
+            Token Metrics
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={modelUsageData}
+                  data={[
+                    { name: 'Prompt Tokens', value: token_metrics.avg_prompt_tokens },
+                    { name: 'Completion Tokens', value: token_metrics.avg_completion_tokens },
+                  ]}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -194,11 +170,8 @@ export default function Analytics() {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {modelUsageData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
+                  {COLORS.map((color, index) => (
+                    <Cell key={`cell-${index}`} fill={color} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -208,24 +181,16 @@ export default function Analytics() {
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Top User Queries
-          </h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Top Users</h3>
           <div className="space-y-4">
-            {[
-              { query: 'How do I reset my password?', count: 145 },
-              { query: 'What are your business hours?', count: 98 },
-              { query: 'How do I track my order?', count: 87 },
-              { query: 'What payment methods do you accept?', count: 76 },
-              { query: 'How do I contact support?', count: 65 },
-            ].map((item, index) => (
+            {top_users.map((user, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between py-2 border-b border-gray-200 last:border-0"
               >
-                <span className="text-sm text-gray-600">{item.query}</span>
+                <span className="text-sm text-gray-600">{user.user}</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {item.count}
+                  {user.request_count} requests
                 </span>
               </div>
             ))}
