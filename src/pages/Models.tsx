@@ -1,32 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, Zap } from 'lucide-react';
 
-const models = [
-  {
-    id: 'gpt-4',
-    name: 'GPT-4',
-    description: 'Most capable model, best for complex tasks',
-    pricing: '$0.03/1K tokens',
-    status: 'active',
-  },
-  {
-    id: 'gpt-3.5-turbo',
-    name: 'GPT-3.5 Turbo',
-    description: 'Fast and efficient for most tasks',
-    pricing: '$0.002/1K tokens',
-    status: 'active',
-  },
-  {
-    id: 'claude-2',
-    name: 'Claude 2',
-    description: 'Advanced reasoning and analysis',
-    pricing: '$0.01/1K tokens',
-    status: 'inactive',
-  },
-];
-
 export default function Models() {
-  const [selectedModel, setSelectedModel] = useState('gpt-4');
+  const [models, setModels] = useState([]);
+  const [selectedModel, setSelectedModel] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Fetch models from the API
+    const fetchModels = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          'https://pvanand-rag-chat-with-analytics.hf.space/models'
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch models');
+        }
+        const data = await response.json();
+        const fetchedModels = data.models.map((modelName, index) => ({
+          id: `model-${index}`,
+          name: modelName.split('/').pop(), // Extract the name after the slash
+          description: `Details for ${modelName}`, // Placeholder for description
+          pricing: 'Pricing not available', // Placeholder for pricing
+          status: 'active', // Assuming all models are active
+        }));
+        setModels(fetchedModels);
+        setSelectedModel(fetchedModels[0]?.id || null); // Default to the first model
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center text-gray-500">
+        <p>Loading models...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -53,13 +79,7 @@ export default function Models() {
                   {model.name}
                 </h3>
                 <div className="mt-1 flex items-center">
-                  <span
-                    className={`inline-flex h-2 w-2 rounded-full ${
-                      model.status === 'active'
-                        ? 'bg-green-400'
-                        : 'bg-gray-400'
-                    }`}
-                  />
+                  <span className="inline-flex h-2 w-2 rounded-full bg-green-400" />
                   <span className="ml-2 text-sm text-gray-500 capitalize">
                     {model.status}
                   </span>
@@ -98,49 +118,51 @@ export default function Models() {
         ))}
       </div>
 
-      <div className="bg-white shadow rounded-lg p-6 mt-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Model Settings
-        </h3>
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="temperature"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Temperature
-            </label>
-            <input
-              type="range"
-              id="temperature"
-              min="0"
-              max="2"
-              step="0.1"
-              defaultValue="0.7"
-              className="mt-1 w-full"
-            />
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>More Focused</span>
-              <span>More Creative</span>
+      {selectedModel && (
+        <div className="bg-white shadow rounded-lg p-6 mt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Model Settings
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="temperature"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Temperature
+              </label>
+              <input
+                type="range"
+                id="temperature"
+                min="0"
+                max="2"
+                step="0.1"
+                defaultValue="0.7"
+                className="mt-1 w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>More Focused</span>
+                <span>More Creative</span>
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="max-tokens"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Maximum Length (tokens)
+              </label>
+              <input
+                type="number"
+                id="max-tokens"
+                defaultValue="2048"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
             </div>
           </div>
-
-          <div>
-            <label
-              htmlFor="max-tokens"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Maximum Length (tokens)
-            </label>
-            <input
-              type="number"
-              id="max-tokens"
-              defaultValue="2048"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
