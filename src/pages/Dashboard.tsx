@@ -91,19 +91,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
-            name: 'Total Tokens',
+            name: 'Tokens',
             value: metrics.totalTokens,
             change: 'Tokens processed',
             icon: BarChartIcon,
           },
           {
-            name: 'Average Latency',
+            name: 'Latency',
             value: `${metrics.avgLatency}s`,
             change: 'Average response time',
             icon: Clock,
           },
           {
-            name: 'Total Cost',
+            name: 'Cost',
             value: `$${metrics.totalCost}`,
             change: 'Cost per token',
             icon: DollarSign,
@@ -211,25 +211,25 @@ export default function Dashboard() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  tracking-wider">
                   ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created At
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  tracking-wider">
+                  Time Stamp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  tracking-wider">
                   Model
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  tracking-wider">
                   Tokens
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500  tracking-wider">
                   Cost
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500  tracking-wider">
                   Actions
                 </th>
               </tr>
