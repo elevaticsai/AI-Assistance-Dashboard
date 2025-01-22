@@ -4,28 +4,13 @@ import { UserPlus, MoreVertical, Mail, Shield } from 'lucide-react';
 const users = [
   {
     id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
+    name: 'Elevatics AI',
+    email: 'user@elevatics.ai',
     role: 'Admin',
     status: 'Active',
     lastActive: '2 hours ago',
   },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'User',
-    status: 'Active',
-    lastActive: '5 minutes ago',
-  },
-  {
-    id: 3,
-    name: 'Mike Johnson',
-    email: 'mike@example.com',
-    role: 'User',
-    status: 'Inactive',
-    lastActive: '2 days ago',
-  },
+  
 ];
 
 export default function UserManagement() {
