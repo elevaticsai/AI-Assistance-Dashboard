@@ -136,7 +136,7 @@ export default function KnowledgeBase() {
         
         <h3 className="text-xl font-semibold text-gray-800">Existing Tables:</h3>
         <br></br>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           
   {tables.length > 0 ? (
     tables.map((table, index) => (
@@ -160,7 +160,47 @@ export default function KnowledgeBase() {
       No tables found.
     </div>
   )}
+</div> */}
+<div className="overflow-x-auto mb-8">
+  {tables.length > 0 ? (
+    <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+      <thead className="bg-white-100 border-b border-gray-200">
+        <tr>
+          <th className="text-left px-6 py-4 font-medium text-black-600">Knowledge Base</th>
+          <th className="text-left px-6 py-4 font-medium text-black-600">Created At</th>
+          <th className="text-center px-6 py-4 font-medium text-black-600">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tables.map((table, index) => (
+          <tr key={index} className="border-b hover:bg-gray-50">
+            <td className="px-6 py-4 text-gray-800">{table.table_name}</td>
+            <td className="px-6 py-4 text-gray-600">{table.created_at || 'N/A'}</td>
+            <td className="px-6 py-4 text-center">
+              <button
+                onClick={() => selectTableForQuery(table)}
+                className="text-blue-600 hover:text-blue-800 mr-4"
+              >
+                ✏️
+              </button>
+              <button
+                onClick={() => deleteTable(table)}
+                className="text-red-600 hover:text-red-800"
+              >
+                🗑️
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ) : (
+    <div className="text-gray-500 text-center">
+      No tables found.
+    </div>
+  )}
 </div>
+
 
 
           <br></br>
