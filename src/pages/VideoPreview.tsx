@@ -3,7 +3,7 @@ import { Play } from 'lucide-react';
 
   
   // Update VideoPreview component to validate YouTube URL
-  const VideoPreview = ({ href }) => {
+  const VideoPreview = ({ href }: any) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [thumbnailUrl, setThumbnailUrl] = useState('');
     const [videoTitle, setVideoTitle] = useState('');
@@ -11,7 +11,7 @@ import { Play } from 'lucide-react';
   
     useEffect(() => {
       // Extract video ID from different types of YouTube URLs
-      const getYouTubeVideoId = (url) => {
+      const getYouTubeVideoId = (url: any) => {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;

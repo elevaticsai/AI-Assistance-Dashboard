@@ -18,7 +18,7 @@ import { ArrowUp, ArrowDown, Users, MessageSquare, Zap } from 'lucide-react';
 const COLORS = ['#6366f1', '#34d399', '#fbbf24'];
 
 export default function Analytics() {
-  const [statistics, setStatistics] = useState(null);
+  const [statistics, setStatistics] = useState<any|null >(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -183,7 +183,7 @@ export default function Analytics() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Top Users</h3>
           <div className="space-y-4">
-            {top_users.map((user, index) => (
+            {top_users.map((user:any, index:any) => (
               <div
                 key={index}
                 className="flex items-center justify-between py-2 border-b border-gray-200 last:border-0"

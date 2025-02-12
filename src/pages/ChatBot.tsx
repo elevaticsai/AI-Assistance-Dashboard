@@ -63,7 +63,7 @@ const MODEL_OPTIONS = [
 ];
 
 const ChatUI = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [userInput, setUserInput] = useState('');
   const [conversationId, setConversationId] = useState('');
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
@@ -82,7 +82,8 @@ const ChatUI = () => {
 
   useEffect(() => {
     marked.setOptions({
-      highlight: (code, lang) => {
+      //@ts-ignore
+      highlight: (code: any, lang: any) => {
         if (lang && hljs.getLanguage(lang)) {
           return hljs.highlight(code, { language: lang }).value;
         }
@@ -249,7 +250,7 @@ interface Message {
       if (!reader) return;
   
       let currentResponse = '';
-      let currentClarifications = [];
+      let currentClarifications: any[] = [];
       let interactContent = '';
       let isCollectingInteract = false;
       
@@ -267,7 +268,7 @@ interface Message {
             const eventData = JSON.parse(line.substring(6)) as EventData;
             
             if (eventData.type === 'token') {
-              const content = eventData.content;
+              const content = eventData.content as any;
   
               // Handle interact tags
               if (content.includes('<interact>')) {
@@ -387,7 +388,7 @@ interface Message {
   };
 
 // Function to extract text content from message
-const getMessageTextContent = (message) => {
+const getMessageTextContent = (message: any) => {
     let text = '';
     
     // Add main message content (strip HTML tags)
@@ -395,9 +396,9 @@ const getMessageTextContent = (message) => {
     
     // Add questions and options if present
     if (message.clarifications) {
-      message.clarifications.forEach((clarification) => {
+      message.clarifications.forEach((clarification: any) => {
         text += clarification.question + ' Options are: ';
-        clarification.options.forEach((option, index) => {
+        clarification.options.forEach((option: any, index:any) => {
           text += `${option}${index < clarification.options.length - 1 ? ', ' : '. '}`;
         });
       });
@@ -513,12 +514,12 @@ return (
     {/* Interactive Options */}
     {message.type === 'bot' && message.clarifications && (
       <div className="mt-3 max-w-[80%]">
-        {message.clarifications.map((clarification, cIndex) => (
+        {message.clarifications.map((clarification:any, cIndex:any) => (
           <InteractiveOptions
             key={cIndex}
             question={clarification.question}
             options={clarification.options}
-            onOptionSelect={(selectedOption) => {
+            onOptionSelect={(selectedOption:any) => {
               sendMessage(selectedOption);
             }}
           />
