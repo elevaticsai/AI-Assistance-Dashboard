@@ -6,7 +6,7 @@ interface InteractiveOptionsProps {
   onOptionSelect: (option: string) => void;
 }
 
-const InteractiveOptions = ({ question, options, onOptionSelect }) => {
+const InteractiveOptions = ({ question, options, onOptionSelect } : InteractiveOptionsProps) => {
   return (
     <div className="w-full bg-gray-50 rounded-lg p-4 border border-gray-200">
       <p className="text-gray-800 font-medium mb-3">{question}</p>

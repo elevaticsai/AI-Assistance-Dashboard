@@ -2,7 +2,7 @@ import { Play, StopCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 // Add this component for audio controls
-const AudioControls = ({ textToRead, language }) => {
+const AudioControls = ({ textToRead, language }:any) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const speechSynthRef = useRef(window.speechSynthesis);
     const utteranceRef = useRef(null);
@@ -33,7 +33,7 @@ const AudioControls = ({ textToRead, language }) => {
         setIsPlaying(false);
       };
   
-      utteranceRef.current = utterance;
+      utteranceRef.current = utterance as any;
       speechSynthRef.current.speak(utterance);
       setIsPlaying(true);
     };

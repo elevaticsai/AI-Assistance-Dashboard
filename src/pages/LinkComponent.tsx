@@ -1,9 +1,9 @@
 import { memo } from "react";
 import VideoPreview from "./VideoPreview";
 
-const LinkComponent = memo(({ href, children, ...props }) => {
+const LinkComponent = memo(({ href, children, ...props }: any) => {
     // Function to check if URL is a YouTube link
-    const isYouTubeUrl = (url) => {
+    const isYouTubeUrl = (url: any) => {
       const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
       return youtubeRegex.test(url);
     };

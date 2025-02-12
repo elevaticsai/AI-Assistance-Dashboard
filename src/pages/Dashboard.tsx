@@ -29,7 +29,7 @@ export default function Dashboard() {
     successRate: 0,
   });
   const [latencyData, setLatencyData] = useState([]);
-  const [tokenDistribution, setTokenDistribution] = useState([]);
+  const [tokenDistribution, setTokenDistribution] = useState<any[]>([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
   const fetchData = async () => {
@@ -47,34 +47,34 @@ export default function Dashboard() {
     }
   };
 
-  const updateMetrics = (observations) => {
-    const totalTokens = observations.reduce((sum, d) => sum + d.total_tokens, 0);
-    const avgLatency = observations.reduce((sum, d) => sum + d.latency, 0) / observations.length;
-    const totalCost = observations.reduce((sum, d) => sum + d.cost, 0);
-    const successRate = (observations.filter((d) => d.status === 'success').length / observations.length) * 100;
+  const updateMetrics = (observations: any) => {
+    const totalTokens = observations.reduce((sum:any, d:any) => sum + d.total_tokens, 0);
+    const avgLatency = observations.reduce((sum:any, d:any) => sum + d.latency, 0) / observations.length;
+    const totalCost = observations.reduce((sum:any, d:any) => sum + d.cost, 0);
+    const successRate = (observations.filter((d:any) => d.status === 'success').length / observations.length) * 100;
 
     setMetrics({
       totalTokens,
-      avgLatency: avgLatency.toFixed(2),
+      avgLatency: avgLatency.toFixed(2) as any,
       totalCost: totalCost.toFixed(4),
-      successRate: successRate.toFixed(1),
+      successRate: successRate.toFixed(1) as any,
     });
   };
 
-  const prepareChartData = (observations) => {
+  const prepareChartData = (observations: any) => {
     setTokenDistribution([
       {
         name: 'Prompt Tokens',
-        value: observations.reduce((sum, d) => sum + d.prompt_tokens, 0),
+        value: observations.reduce((sum: any, d: any) => sum + d.prompt_tokens, 0),
       },
       {
         name: 'Completion Tokens',
-        value: observations.reduce((sum, d) => sum + d.completion_tokens, 0),
+        value: observations.reduce((sum: any, d: any) => sum + d.completion_tokens, 0),
       },
     ]);
 
     setLatencyData(
-      observations.map((d) => ({
+      observations.map((d :any) => ({
         time: new Date(d.created_at).toLocaleTimeString(),
         value: d.latency,
       }))
@@ -235,7 +235,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data.map((request) => (
+              {data.map((request: any) => (
                 <tr key={request.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {request.id}
@@ -287,30 +287,30 @@ export default function Dashboard() {
       </h3>
       <div className="space-y-2">
         <p>
-          <strong>ID:</strong> {selectedRequest.id}
+          <strong>ID:</strong> {(selectedRequest as any).id}
         </p>
         <p>
           <strong>Created At:</strong>{' '}
-          {new Date(selectedRequest.created_at).toLocaleString()}
+          {new Date((selectedRequest as any).created_at).toLocaleString()}
         </p>
         <p>
-          <strong>Status:</strong> {selectedRequest.status}
+          <strong>Status:</strong> {(selectedRequest as any).status}
         </p>
         <p>
-          <strong>Model:</strong> {selectedRequest.model}
+          <strong>Model:</strong> {(selectedRequest as any).model}
         </p>
         <p>
-          <strong>Prompt Tokens:</strong> {selectedRequest.prompt_tokens}
+          <strong>Prompt Tokens:</strong> {(selectedRequest as any).prompt_tokens}
         </p>
         <p>
           <strong>Completion Tokens:</strong>{' '}
-          {selectedRequest.completion_tokens}
+          {(selectedRequest as any).completion_tokens}
         </p>
         <p>
-          <strong>Total Tokens:</strong> {selectedRequest.total_tokens}
+          <strong>Total Tokens:</strong> {(selectedRequest as any).total_tokens}
         </p>
         <p>
-          <strong>Cost:</strong> ${selectedRequest.cost.toFixed(4)}
+          <strong>Cost:</strong> ${(selectedRequest as any).cost.toFixed(4)}
         </p>
         <div className="border-t border-gray-200 mt-4 pt-4">
           <h4 className="font-medium text-gray-900">Conversation</h4>
@@ -318,13 +318,13 @@ export default function Dashboard() {
             <strong>Request:</strong>
           </p>
           <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto whitespace-pre-wrap">
-            {JSON.stringify(JSON.parse(selectedRequest.request), null, 2)}
+            {JSON.stringify(JSON.parse((selectedRequest as any).request), null, 2)}
           </pre>
           <p className="text-sm mt-2">
             <strong>Response:</strong>
           </p>
           <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto whitespace-pre-wrap">
-            {selectedRequest.response}
+            {(selectedRequest as any).response}
           </pre>
         </div>
       </div>

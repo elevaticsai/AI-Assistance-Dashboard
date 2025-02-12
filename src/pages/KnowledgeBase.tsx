@@ -14,7 +14,7 @@ export default function KnowledgeBase() {
   const [tables, setTables] = useState<any[]>([]);
 
   const baseUrl = 'https://pvanand-rag-chat-with-analytics.hf.space';
-
+  
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -70,7 +70,7 @@ export default function KnowledgeBase() {
       );
       console.log("Search Results:", response.data);
       setSearchResults(response.data.results);
-    } catch (error) {
+    } catch (error:any) {
       console.error("Error searching documents:", error);
       alert(`Error searching documents: ${error.response?.data?.message || error.message}`);
     }
@@ -80,6 +80,7 @@ export default function KnowledgeBase() {
     if (userId) {
       try {
         const response = await axios.get(`${baseUrl}/rag/get_tables/${userId}`);
+        console.log(response, "data")
         setTables(response.data || []);
       } catch (error) {
         console.error("Error fetching tables:", error);
@@ -87,6 +88,31 @@ export default function KnowledgeBase() {
     }
   };
 
+  const deleteTable = async (tableId: string) => {
+    if (!tableId) {
+      alert("Table ID is missing.");
+      return;
+    }
+    if (!userId) {
+      alert("User ID is required.");
+      return;
+    }
+  
+    try {
+      await axios.delete(`${baseUrl}/rag/delete_table/${tableId}`, {
+        data: { user_id: userId }, // Pass user_id in the request body
+        headers: { 'Content-Type': 'application/json' },
+      });
+  
+      alert("Table deleted successfully!");
+      await fetchTables(); // Refresh the table list
+    } catch (error: any) {
+      console.error("Error deleting table:", error);
+      alert(`Error deleting table: ${error.response?.data?.message || error.message}`);
+    }
+  };
+  
+  
   const handleUploadDocuments = async () => {
     if (!files.length || !userId || !tableName) return;
 
@@ -102,7 +128,7 @@ export default function KnowledgeBase() {
       alert('Documents uploaded successfully!');
       await fetchTables();
       setFiles([]);
-    } catch (error) {
+    } catch (error:any) {
       alert('Error uploading documents: ' + error.message);
     } finally {
       setIsUploading(false);
@@ -178,16 +204,16 @@ export default function KnowledgeBase() {
             <td className="px-6 py-4 text-gray-600">{table.created_at || 'N/A'}</td>
             <td className="px-6 py-4 text-center">
               <button
-                onClick={() => selectTableForQuery(table)}
+                // onClick={() => selectTableForQuery(table)}
                 className="text-blue-600 hover:text-blue-800 mr-4"
               >
                 ✏️
               </button>
               <button
-                onClick={() => deleteTable(table)}
+                onClick={() => deleteTable(table.table_id)}
                 className="text-red-600 hover:text-red-800"
               >
-                🗑️
+                <Trash2 size={16} />
               </button>
             </td>
           </tr>

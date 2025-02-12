@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Zap } from 'lucide-react';
 
+interface Model {
+  id: string;
+  name: string;
+  description: string;
+  pricing: string;
+  status: string;
+}
+
 export default function Models() {
-  const [models, setModels] = useState([]);
-  const [selectedModel, setSelectedModel] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [models, setModels] = useState<Model[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch models from the API
     const fetchModels = async () => {
       try {
         setLoading(true);
@@ -19,17 +26,23 @@ export default function Models() {
           throw new Error('Failed to fetch models');
         }
         const data = await response.json();
-        const fetchedModels = data.models.map((modelName, index) => ({
+        
+        if (!data.models || !Array.isArray(data.models)) {
+          throw new Error('Invalid data format');
+        }
+        
+        const fetchedModels: Model[] = data.models.map((modelName: string, index: number) => ({
           id: `model-${index}`,
-          name: modelName.split('/').pop(), // Extract the name after the slash
-          description: `Details for ${modelName}`, // Placeholder for description
-          pricing: 'Pricing not available', // Placeholder for pricing
-          status: 'active', // Assuming all models are active
+          name: modelName.split('/').pop() || modelName,
+          description: `Details for ${modelName}`,
+          pricing: 'Pricing not available',
+          status: 'active',
         }));
+        
         setModels(fetchedModels);
-        setSelectedModel(fetchedModels[0]?.id || null); // Default to the first model
+        setSelectedModel(fetchedModels[0]?.id || null);
       } catch (err) {
-        setError(err.message);
+        setError((err as Error).message);
       } finally {
         setLoading(false);
       }
@@ -156,7 +169,7 @@ export default function Models() {
               <input
                 type="number"
                 id="max-tokens"
-                defaultValue="2048"
+                defaultValue={2048}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
