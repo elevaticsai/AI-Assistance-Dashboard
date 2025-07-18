@@ -153,6 +153,7 @@ const ChatUI = () => {
         setLoadingModels(true);
         const response = await fetch(
           "https://api4prod.elevatics.site/models",
+          
           {
             headers: {
               accept: "application/json",
