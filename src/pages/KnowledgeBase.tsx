@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
 export default function KnowledgeBase() {
-  const API_BASE = "https://api4prod.elevatics.space/rag";
+  const API_BASE = "https://api4rag.elevatics.site/rag";
   const apiKey = import.meta.env.VITE_API_KEY; // Load API Key from .env
   const [tables, setTables] = useState<string[]>([]);
   const [selectedTable, setSelectedTable] = useState("");
